@@ -17,7 +17,7 @@ passed = 0
 failed = 0
 
 
-def test(name):
+def gp_test(name):
     def decorator(fn):
         def wrapper():
             global passed, failed
@@ -35,7 +35,7 @@ def test(name):
 
 # ─── Vibe tests (1-5) ───
 
-@test("1: Vibe creation and indexing")
+@gp_test("1: Vibe creation and indexing")
 def t1():
     v = Vibe([0.1] * 16)
     assert v[0] == 0.1
@@ -43,28 +43,28 @@ def t1():
     v2 = Vibe()  # default 0.5
     assert v2[0] == 0.5
 
-@test("2: Vibe blend")
+@gp_test("2: Vibe blend")
 def t2():
     a = Vibe([0.0] * 16)
     b = Vibe([1.0] * 16)
     mid = a.blend(b, 0.5)
     assert all(abs(d - 0.5) < 1e-9 for d in mid.dims)
 
-@test("3: Vibe distance")
+@gp_test("3: Vibe distance")
 def t3():
     a = Vibe([0.0] * 16)
     b = Vibe([1.0] * 16)
     d = a.distance(b)
     assert abs(d - math.sqrt(16)) < 1e-9
 
-@test("4: Vibe diffuse")
+@gp_test("4: Vibe diffuse")
 def t4():
     center = Vibe([0.5] * 16)
     neighbors = [Vibe([1.0] * 16), Vibe([0.0] * 16)]
     diffused = center.diffuse(neighbors, coeff=0.2)
     assert all(abs(d - 0.5) < 1e-9 for d in diffused.dims)
 
-@test("5: Vibe qualitative description")
+@gp_test("5: Vibe qualitative description")
 def t5():
     v = Vibe([0.9, 0.1] + [0.5] * 14)  # very dark, low bright
     desc = v.qualitative_description()
@@ -73,13 +73,13 @@ def t5():
 
 # ─── Jepa tests (6-10) ───
 
-@test("6: Jepa perceive")
+@gp_test("6: Jepa perceive")
 def t6():
     j = Jepa()
     j.perceive(Vibe([0.8] * 16))
     assert j.perception_db.size() == 1
 
-@test("7: Jepa predict")
+@gp_test("7: Jepa predict")
 def t7():
     j = Jepa()
     j.perceive(Vibe([0.8] * 16))
@@ -87,7 +87,7 @@ def t7():
     pred = j.predict()
     assert abs(pred[0] - 0.8) < 1e-9
 
-@test("8: Jepa surprise")
+@gp_test("8: Jepa surprise")
 def t8():
     j = Jepa()
     j.perceive(Vibe([0.0] * 16))
@@ -96,7 +96,7 @@ def t8():
     s = j.surprise(Vibe([1.0] * 16))
     assert s > 0.5
 
-@test("9: Jepa conservation")
+@gp_test("9: Jepa conservation")
 def t9():
     j = Jepa()
     for i in range(5):
@@ -105,7 +105,7 @@ def t9():
     c = j.check_conservation()
     assert c < 0.5  # predictions ≈ perceptions
 
-@test("10: Jepa gc")
+@gp_test("10: Jepa gc")
 def t10():
     j = Jepa()
     for i in range(200):
@@ -116,14 +116,14 @@ def t10():
 
 # ─── Murmur tests (11-13) ───
 
-@test("11: Murmur create and ingest")
+@gp_test("11: Murmur create and ingest")
 def t11():
     m = Murmur("node-1")
     p = MurmurPacket("node-2", Vibe([0.7] * 16), MurmurLevel.NEIGHBOR, ttl=3)
     m.ingest(p)
     assert not m.is_empty()
 
-@test("12: Murmur decay")
+@gp_test("12: Murmur decay")
 def t12():
     m = Murmur("node-1")
     p = MurmurPacket("node-2", Vibe([0.7] * 16), ttl=0)  # already TTL=0
@@ -131,7 +131,7 @@ def t12():
     m.decay_all()
     assert m.is_empty()
 
-@test("13: Gossip round")
+@gp_test("13: Gossip round")
 def t13():
     m1 = Murmur("a")
     m2 = Murmur("b")
@@ -146,14 +146,14 @@ def t13():
 
 # ─── Tick tests (14-15) ───
 
-@test("14: Tick schedule")
+@gp_test("14: Tick schedule")
 def t14():
     ts = TickSchedule(tick_interval=0.01)
     t1 = ts.next_tick()
     t2 = ts.next_tick()
     assert t2.timestamp >= t1.timestamp
 
-@test("15: Tempo adapt")
+@gp_test("15: Tempo adapt")
 def t15():
     tempo = Tempo(bpm=120.0)
     tempo.adapt(1.0)  # max energy → speed up
@@ -165,7 +165,7 @@ def t15():
 
 # ─── Signal tests (16-17) ───
 
-@test("16: Router direct")
+@gp_test("16: Router direct")
 def t16():
     r = Router()
     r.add_port("a:out", is_output=True)
@@ -177,7 +177,7 @@ def t16():
     received = r.receive("b:in")
     assert len(received) == 1
 
-@test("17: Router deadband (on_change)")
+@gp_test("17: Router deadband (on_change)")
 def t17():
     r = Router()
     r.add_port("a:out", is_output=True)
@@ -193,7 +193,7 @@ def t17():
 
 # ─── CellGraph tests (18-23) ───
 
-@test("18: CellGraph tick")
+@gp_test("18: CellGraph tick")
 def t18():
     g = CellGraph()
     g.add_room("r1", Vibe([0.5] * 16))
@@ -201,7 +201,7 @@ def t18():
     t = g.tick()
     assert t == 1
 
-@test("19: CellGraph gossip")
+@gp_test("19: CellGraph gossip")
 def t19():
     g = CellGraph()
     g.add_room("r1", Vibe([0.5] * 16))
@@ -211,7 +211,7 @@ def t19():
     assert result["sent"] > 0
     assert result["received"] > 0
 
-@test("20: CellGraph chain topology")
+@gp_test("20: CellGraph chain topology")
 def t20():
     g = CellGraph()
     g.add_room("a")
@@ -222,7 +222,7 @@ def t20():
     assert "c" in g.edges.get("b", set())
     assert "a" in g.edges.get("b", set())
 
-@test("21: CellGraph mesh topology")
+@gp_test("21: CellGraph mesh topology")
 def t21():
     g = CellGraph()
     for i in range(4):
@@ -236,7 +236,7 @@ def t21():
     g.gossip()
     assert g.fleet_vibe() is not None
 
-@test("22: Fleet vibe average")
+@gp_test("22: Fleet vibe average")
 def t22():
     g = CellGraph()
     g.add_room("r1", Vibe([0.0] * 16))
@@ -244,7 +244,7 @@ def t22():
     fv = g.fleet_vibe()
     assert abs(fv[0] - 0.5) < 1e-9
 
-@test("23: Anomaly detection")
+@gp_test("23: Anomaly detection")
 def t23():
     g = CellGraph()
     g.add_room("normal", Vibe([0.5] * 16))
